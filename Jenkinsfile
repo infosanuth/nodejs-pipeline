@@ -12,7 +12,7 @@ pipeline {
         stage('SCM Checkout') {
             steps {
                 retry(3) {
-                    git branch: 'main', url: 'https://github.com/infosanuth/nodejs-pipeline'
+                    git branch: 'master', url: 'https://github.com/infosanuth/nodejs-pipeline'
                 }
             }
         }
@@ -20,7 +20,7 @@ pipeline {
         stage('Build') {
             steps {
                 dir('nodeapp') {
-                sh 'npm install'
+                bat 'npm install'
                 }
             }
         }
@@ -28,7 +28,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('nodeapp') {
-                sh 'npm test'
+                bat 'npm test'
                 }
             }
         }
@@ -38,20 +38,20 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: "${DOCKER_HUB_CREDENTIALS}", 
                                                   usernameVariable: 'DOCKER_USER', 
                                                   passwordVariable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
                 }
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                bat "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
+                bat "docker push ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
@@ -59,7 +59,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker logout'
+            bat 'docker logout'
         }
     }
 }
